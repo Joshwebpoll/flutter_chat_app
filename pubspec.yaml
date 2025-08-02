@@ -47,6 +47,7 @@ dependencies:
   flutter_native_splash: ^2.4.6
   flutter_launcher_icons: ^0.14.4
   shared_preferences: ^2.5.3
+  rename_app: ^1.6.5
 
 dev_dependencies:
   flutter_test:
@@ -101,20 +102,17 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 flutter_native_splash:
-  color: "#ffffff" # background color
-  image: assets/images/chats.png # your splash image
-
-  android: true
-  ios: true
-  web: false
+  color: "#ffffff"
+  image: assets/images/chats.png
+  branding: assets/images/chats.png
+  color_dark: "#ffffff"
+  image_dark: assets/images/chats.png
+  branding_dark: assets/images/chats.png
 
   android_12:
     image: assets/images/chats.png
     icon_background_color: "#ffffff"
-    # branding: assets/branding.png
-flutter_icons:
-  android: true
-  ios: true
-  image_path: "assets/images/chats.png"
-  # background_color: "#FFFFFF" # 👈 White background
-  # remove_alpha_ios: true
+    image_dark: assets/images/chats.png
+    icon_background_color_dark: "#121212"
+
+  web: false

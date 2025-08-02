@@ -195,7 +195,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       itemCount: messages.length,
                       itemBuilder: (context, i) {
                         final m = messages[i];
-                        print(m.sender);
+
                         return Column(
                           children: [
                             Align(
@@ -216,8 +216,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color:
-                                      m.sender == userId
-                                          ? Color(0xFF3991f2)
+                                      m.receiver == widget.user.id
+                                          ? Color(0xFf22c55e)
                                           : Colors.grey[300],
                                   borderRadius: BorderRadius.circular(12),
                                 ),

@@ -20,28 +20,37 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
   final TextEditingController messageController = TextEditingController();
   final socket = SocketService();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _listenForMessages();
+    });
+  }
 
-    // Setup socket listeners after first frame
+  void _listenForMessages() {
+    socket.listen('chatMessage', (data) async {
+      if (!mounted) return;
+      print("${data} llslsll");
+      final myId = await ref.read(meProvider.future);
 
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   final socket = ref.read(socketProvider);
+      //  if(myId != null){
+      ref.read(chatPreviewsProvider.notifier).updateChatPreview(data, myId.id);
+      //  }
+    });
+  }
 
-    //   socket.removeListener('chatMessage'); // Prevent duplicates
-    //   socket.listen('chatMessage', (data) {
-    //     print(data);
-    //     final myId = ref.read(meProvider).asData?.value;
-    //     // ref
-    //     //     .read(chatPreviewsProvider.notifier)
-    //     //     .updateChatPreview(data, myId!.id);
-    //   });
-    // });
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _listenForMessages(); // reattach listener when screen resumes
+    }
   }
 
   // Handle navigation to chat with proper result handling
@@ -66,21 +75,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void dispose() {
     // Clean up socket listeners
     ref.read(socketProvider).removeListener('chatMessage');
+    WidgetsBinding.instance.removeObserver(this);
     messageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    socket.listen('chatMessage', (data) async {
-      print("${data} llslsll");
-      final myId = await ref.read(meProvider.future);
-
-      print("${myId.id} mmmem");
-      //  if(myId != null){
-      ref.read(chatPreviewsProvider.notifier).updateChatPreview(data, myId.id);
-      //  }
-    });
     ref.listen<AsyncValue<String>>(authProvider, (prev, next) {
       next.whenOrNull(
         data: (value) {
@@ -97,9 +98,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           }
         },
         error: (e, _) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Error: $e")));
+          if (!context.mounted) return;
+          // ScaffoldMessenger.of(
+          //   context,
+          // ).showSnackBar(SnackBar(content: Text("Error: $e")));
         },
       );
     });

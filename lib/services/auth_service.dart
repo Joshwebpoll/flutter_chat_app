@@ -22,7 +22,7 @@ class Services {
       final data = jsonDecode(res.body);
 
       if (res.statusCode == 200) {
-        print(data['token']);
+        print(data);
         final socketService = SocketService();
 
         // MUST call connect first
@@ -32,7 +32,7 @@ class Services {
         throw (data['message']);
       }
     } catch (e) {
-      print(e);
+      throw e.toString();
     }
   }
 
@@ -183,7 +183,7 @@ class Services {
 
   Future<List<UserModel>> getUser() async {
     final token = await getToken();
-    print(token);
+    print("$token jsjsj");
 
     final res = await http.get(
       Uri.parse('$baseUrl/profile'),

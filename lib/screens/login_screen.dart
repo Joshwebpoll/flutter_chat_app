@@ -30,38 +30,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final loginState = ref.watch(authProvider);
 
     ref.listen<AsyncValue<String>>(authProvider, (prev, next) {
-      if (prev != next) {
-        next.whenOrNull(
-          data: (message) {
-            if (message.isNotEmpty) {
-              // AppToast.show(
-              //   context,
-              //   message.isNotEmpty ? "Login Successful" : "",
-              //   type: ToastTypes.success,
-              //   position: ToastPosition.bottom,
-              //   duration: Duration(seconds: 5),
-              // );
-              // CompanyToast.show(context, message, type: ToastType.success);
+      next.whenOrNull(
+        data: (message) {
+          if (message == 'Login Successful' && prev?.value != message) {
+            if (!context.mounted) return;
+            // AppToast.show(
+            //   context,
+            //   message.isNotEmpty ? "Login Successful" : "",
+            //   type: ToastTypes.success,
+            //   position: ToastPosition.bottom,
+            //   duration: Duration(seconds: 5),
+            // );
+            // CompanyToast.show(context, message, type: ToastType.success);
 
-              Future.microtask(() {
-                if (!context.mounted) return;
-                ref.read(authProvider.notifier).reset();
-                Navigator.pushNamed(context, '/home');
-              });
-            }
-          },
+            Future.microtask(() {
+              if (!context.mounted) return;
+              ref.read(authProvider.notifier).reset();
+              Navigator.pushNamed(context, '/home');
+            });
+          }
+        },
 
-          error: (e, _) {
-            AppToast.show(
-              context,
-              e.toString(),
-              type: ToastTypes.error,
-              position: ToastPosition.bottom,
-              duration: Duration(seconds: 5),
-            );
-          },
-        );
-      }
+        error: (e, _) {
+          if (!context.mounted) return;
+          AppToast.show(
+            context,
+            e.toString(),
+            type: ToastTypes.error,
+            position: ToastPosition.bottom,
+            duration: Duration(seconds: 5),
+          );
+        },
+      );
     });
     return Scaffold(
       backgroundColor: Colors.white,
