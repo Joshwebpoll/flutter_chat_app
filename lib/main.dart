@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:music_player_app/app_theme/app_themes.dart';
 import 'package:music_player_app/global_socket/socket.dart';
+import 'package:music_player_app/global_socket/socket_testing.dart';
 
 import 'package:music_player_app/models/user_model.dart';
 import 'package:music_player_app/screens/chat_screen.dart';
@@ -22,13 +23,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final service = Services();
   final token = await service.getToken();
-  final isLoggedIn = await service.isLoggedIn();
+  // final isLoggedIn = await service.isLoggedIn();
+  final user = await service.getMex();
 
   if (token != null) {
+    // SocketManager().connect(token);
     SocketService().connect(token);
   }
 
-  runApp(ProviderScope(child: MyApp(initialRoute: isLoggedIn ? '/home' : "/")));
+  runApp(ProviderScope(child: MyApp(initialRoute: user ? '/home' : "/")));
 }
 
 class MyApp extends StatelessWidget {

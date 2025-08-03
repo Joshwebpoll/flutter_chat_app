@@ -225,6 +225,30 @@ class Services {
     }
   }
 
+  Future<bool> getMex() async {
+    try {
+      final token = await getToken();
+
+      final res = await http.get(
+        Uri.parse('$baseUrl/me'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': "Bearer $token",
+        },
+      );
+      final data = jsonDecode(res.body);
+
+      if (res.statusCode == 200) {
+        return true;
+        //return (data as List).map((data) => UserModel.fromJson(data)).toList();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      throw 'Please check yoyur network';
+    }
+  }
+
   Future<bool> deleteTokens() async {
     await storage.delete(key: 'token');
     return true;

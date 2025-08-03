@@ -1,16 +1,23 @@
+import 'dart:developer';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:music_player_app/global_socket/socket.dart';
+import 'package:music_player_app/global_socket/socket_testing.dart';
 import 'package:music_player_app/models/chat_preview_model.dart';
 import 'package:music_player_app/models/user_model.dart';
+import 'package:music_player_app/newfile.dart';
 import 'package:music_player_app/providers/auth_provider.dart';
+import 'package:music_player_app/providers/chat_provider.dart';
 import 'package:music_player_app/providers/home_providers.dart';
 import 'package:music_player_app/providers/me_provider.dart';
+
 import 'package:music_player_app/providers/socket_provider.dart';
 import 'package:music_player_app/reuseable_dart/capitalize.dart';
 import 'package:music_player_app/reuseable_dart/time_format.dart';
 import 'package:music_player_app/services/auth_service.dart';
-import 'package:socket_io_client/socket_io_client.dart';
+
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -23,34 +30,52 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with WidgetsBindingObserver {
   final TextEditingController messageController = TextEditingController();
-  final socket = SocketService();
+  final sockets = SocketService();
+  final service = Services();
+  late IO.Socket socket;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _listenForMessages();
-    });
+
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _listenForMessages();
+    // });
+    _listenForMessages();
+    // _initSocket();
+  }
+
+  // void _initSocket() async {
+  //   SocketManager().onMessage((data) async {
+  //     //print('📩 New message: $data');
+
+  //     final myId = await ref.read(meProvider.future);
+
+  //     //  if(myId != null){
+
+  //     final messageState = ref.read(messageProvider.notifier).addMessage(data);
+  //     // ref.read(chatPreviewsProvider.notifier).updateChatPreview(data, myId.id);
+  //     //  }
+  //   });
+  // }
+
+  @override
+  void dispose() {
+    // socket.dispose(); // Clean up
+    super.dispose();
   }
 
   void _listenForMessages() {
-    socket.listen('chatMessage', (data) async {
-      if (!mounted) return;
-      print("${data} llslsll");
+    sockets.listen('chatMessage', (data) async {
+      if (kDebugMode) {
+        print(data);
+      }
       final myId = await ref.read(meProvider.future);
 
-      //  if(myId != null){
+      ref.read(messageProvider.notifier).addMessage(data);
       ref.read(chatPreviewsProvider.notifier).updateChatPreview(data, myId.id);
-      //  }
     });
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _listenForMessages(); // reattach listener when screen resumes
-    }
   }
 
   // Handle navigation to chat with proper result handling
@@ -62,22 +87,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // Re-setup socket listeners when returning from any navigation
     print("🔄 Re-setting up socket listeners after navigation");
     //ref.read(socketListenerProvider).setupSocketListeners();
+
     ref.read(chatPreviewsProvider.notifier).markAsRead(user.id);
-    final service = Services();
-    final token = await service.getToken();
-
-    if (token != null) {
-      SocketService().connect(token);
-    }
-  }
-
-  @override
-  void dispose() {
-    // Clean up socket listeners
-    ref.read(socketProvider).removeListener('chatMessage');
-    WidgetsBinding.instance.removeObserver(this);
-    messageController.dispose();
-    super.dispose();
   }
 
   @override
@@ -86,22 +97,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       next.whenOrNull(
         data: (value) {
           if (value == "Logged out") {
+            sockets.disconnect();
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ref.read(authProvider.notifier).reset(); //
               Navigator.pushNamed(context, '/');
-              // Navigator.pushNamedAndRemoveUntil(
-              //   context,
-              //   '/login',
-              //   (_) => false,
-              // );
             });
           }
         },
         error: (e, _) {
           if (!context.mounted) return;
-          // ScaffoldMessenger.of(
-          //   context,
-          // ).showSnackBar(SnackBar(content: Text("Error: $e")));
         },
       );
     });

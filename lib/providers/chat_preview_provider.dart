@@ -39,7 +39,6 @@ class ChatPreviewsNotifier
   // }
 
   void updateChatPreview(Map<String, dynamic> msg, String userId) {
-    print('$msg $userId mmjjjww');
     state = state.whenData((previews) {
       final isSender = msg['sender'] == userId;
 
