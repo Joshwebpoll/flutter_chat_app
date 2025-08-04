@@ -88,7 +88,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       updatedAt: DateTime.now(),
     );
 
+    final prev = {
+      "id": UniqueKey().toString(),
+      "sender": userId,
+      "receiver": widget.user.id,
+      "imageUrl": widget.user.imageUrl,
+      "message": text,
+      "createdAt": DateTime.now(),
+      "updatedAt": DateTime.now(),
+    };
+    final myId = await ref.read(meProvider.future);
     ref.read(messageProvider.notifier).sendMessage(newMsg);
+    ref.read(chatPreviewsProvider.notifier).updateChatPreview(prev, myId.id);
 
     socket.sendMessage('chatMessage', message);
     messageController.clear();

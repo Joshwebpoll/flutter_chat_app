@@ -106,6 +106,7 @@ class SocketService {
   }
 
   void listen(String event, Function(dynamic) callback) {
+    // _socket?.off(event);
     _socket?.on(event, callback);
   }
 
